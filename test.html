@@ -3,49 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Таблица Очков</title>
+    <title>Измерение скорости нажатия</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+        #start-btn, #click-btn {
+            padding: 10px 20px;
+            font-size: 18px;
+            margin: 10px;
         }
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-        }
-        th {
-            background-color: #f2f2f2;
+        #click-btn {
+            display: none;
         }
     </style>
 </head>
 <body>
+    <h1>Измерьте свою скорость нажатия на кнопку!</h1>
+    <button id="start-btn">Начать</button>
+    <button id="click-btn">Нажмите меня!</button>
+    <p id="result"></p>
 
-<h1>Таблица Очков Пользователей</h1>
+    <script>
+        let startTime, endTime;
 
-<label for="username">Имя пользователя:</label>
-<input type="text" id="username" required>
-<label for="score">Очки:</label>
-<input type="number" id="score" required>
-<button onclick="addScore()">Добавить</button>
+        document.getElementById('start-btn').onclick = function() {
+            document.getElementById('click-btn').style.display = 'block';
+            this.style.display = 'none';
+            startTime = new Date().getTime();
+        };
 
-<table id="scoreboard">
-    <thead>
-        <tr>
-            <th>Имя пользователя</th>
-            <th>Очки</th>
-        </tr>
-    </thead>
-    <tbody>
-        <!-- Данные будут добавляться сюда -->
-    </tbody>
-</table>
+        document.getElementById('click-btn').onclick = function() {
+            endTime = new Date().getTime();
+            const timeTaken = endTime - startTime;
+            document.getElementById('result').innerText = 'Время: ' + timeTaken + ' мс';
+            this.style.display = 'none';
+            document.getElementById('start-btn').style.display = 'block';
+            sendData(timeTaken);
+        };
 
-<script src="src.js"></script>
+        function sendData(timeTaken) {
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "record.php", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.send("timeTaken=" + timeTaken + "&ip=" + getUserIP());
+        }
+
+        function getUserIP() {
+            return 'Ваш IP'; // Здесь можно добавить функцию для получения IP
+        }
+    </script>
 </body>
 </html>
