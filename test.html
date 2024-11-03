@@ -3,52 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Измерение скорости нажатия</title>
+    <title>Speed Test</title>
     <style>
-        #start-btn, #click-btn {
+        #startButton, #submitButton {
             padding: 10px 20px;
-            font-size: 18px;
+            font-size: 16px;
             margin: 10px;
         }
-        #click-btn {
-            display: none;
+        #result {
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
         }
     </style>
 </head>
 <body>
-    <h1>Измерьте свою скорость нажатия на кнопку!</h1>
-    <button id="start-btn">Начать</button>
-    <button id="click-btn">Нажмите меня!</button>
-    <p id="result"></p>
+    <h1>Измерение скорости нажатия на кнопку</h1>
+    <button id="startButton">Начать</button>
+    <button id="submitButton" style="display:none;">Нажмите здесь!</button>
+    <div id="result"></div>
+
+    <h2>Результаты</h2>
+    <table id="resultsTable">
+        <thead>
+            <tr>
+                <th>IP-адрес</th>
+                <th>Время (секунды)</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 
     <script>
         let startTime, endTime;
 
-        document.getElementById('start-btn').onclick = function() {
-            document.getElementById('click-btn').style.display = 'block';
-            this.style.display = 'none';
+        document.getElementById('startButton').onclick = function() {
             startTime = new Date().getTime();
-        };
-
-        document.getElementById('click-btn').onclick = function() {
-            endTime = new Date().getTime();
-            const timeTaken = endTime - startTime;
-            document.getElementById('result').innerText = 'Время: ' + timeTaken + ' мс';
             this.style.display = 'none';
-            document.getElementById('start-btn').style.display = 'block';
-            sendData(timeTaken);
+            document.getElementById('submitButton').style.display = 'inline-block';
         };
 
-        function sendData(timeTaken) {
-            const xhr = new XMLHttpRequest();
-            xhr.open("POST", "record.php", true);
-            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-            xhr.send("timeTaken=" + timeTaken + "&ip=" + getUserIP());
+        document.getElementById('submitButton').onclick = function() {
+            endTime = new Date().getTime();
+            const timeTaken = (endTime - startTime) / 1000; // Время в секундах
+            const ip = ''; // Здесь можно добавить получение IP
+
+            document.getElementById('result').innerText = `Ваш результат: ${timeTaken} секунд`;
+            
+            // Отправка результата на сервер
+            fetch('http://localhost:3000/api/results', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ip, time: timeTaken })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                loadResults(); // Обновляем таблицу результатов после добавления
+            })
+            .catch(error => console.error('Ошибка:', error));
+            
+            this.style.display = 'none';
+            document.getElementById('startButton').style.display = 'inline-block';
+        };
+
+        // Функция для загрузки результатов из базы данных
+        function loadResults() {
+            fetch('http://localhost:3000/api/results')
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.querySelector('#resultsTable tbody');
+                    tbody.innerHTML = ''; // Очищаем таблицу перед обновлением
+
+                    data.forEach(result => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `<td>${result.ip}</td><td>${result.time}</td>`;
+                        tbody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Ошибка:', error));
         }
 
-        function getUserIP() {
-            return 'Ваш IP'; // Здесь можно добавить функцию для получения IP
-        }
+        // Загружаем результаты при загрузке страницы
+        window.onload = loadResults;
     </script>
 </body>
 </html>

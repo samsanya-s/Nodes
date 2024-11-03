@@ -1,38 +1,57 @@
-// Функция для обновления таблицы очков
-function updateScoreboard() {
-    const scoreboard = document.getElementById('scoreboard').getElementsByTagName('tbody')[0];
-    scoreboard.innerHTML = ''; // Очистить таблицу
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const { Sequelize, DataTypes } = require('sequelize');
 
-    const scores = JSON.parse(localStorage.getItem('scores')) || [];
+// Создаем экземпляр приложения
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
 
-    scores.forEach(score => {
-        const row = scoreboard.insertRow();
-        const cell1 = row.insertCell(0);
-        const cell2 = row.insertCell(1);
-        cell1.textContent = score.username;
-        cell2.textContent = score.score;
-    });
-}
+// Настройка базы данных
+const sequelize = new Sequelize({
+    dialect: 'sqlite',
+    storage: 'database.sqlite'
+}); // Используем SQLite в памяти
 
-// Функция для добавления нового очка
-function addScore() {
-    const username = document.getElementById('username').value;
-    const score = document.getElementById('score').value;
-
-    if (!username || score === '') {
-        alert('Пожалуйста, заполните все поля.');
-        return;
+// Модель результата
+const Result = sequelize.define('Result', {
+    ip: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    time: {
+        type: DataTypes.FLOAT,
+        allowNull: false,
     }
+});
 
-    const scores = JSON.parse(localStorage.getItem('scores')) || [];
-    scores.push({ username, score: parseInt(score, 10) });
-    localStorage.setItem('scores', JSON.stringify(scores));
+// Инициализация базы данных
+sequelize.sync();
 
-    document.getElementById('username').value = '';
-    document.getElementById('score').value = '';
+// API для записи результата
+app.post('/api/results', async (req, res) => {
+    const { ip, time } = req.body;
+    try {
+        const result = await Result.create({ ip, time });
+        res.status(201).json(result);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
-    updateScoreboard();
-}
+// Запуск сервера
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
 
-// Обновить таблицу при загрузке страницы
-window.onload = updateScoreboard;
+// API для получения всех результатов
+app.get('/api/results', async (req, res) => {
+    try {
+        const results = await Result.findAll();
+        res.json(results);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
