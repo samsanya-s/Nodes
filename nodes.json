@@ -1,0 +1,17 @@
+[
+    {
+        "name": "Прямой",
+        "image": "nodes\\u0.jpg",
+        "instruction": "nodes\\ui0.jpg"
+    },
+    {
+        "name": "Узел 2",
+        "image": "url_to_node2_image.jpg",
+        "instruction": "url_to_instruction2_image.jpg"
+    },
+    {
+        "name": "Узел 3",
+        "image": "url_to_node3_image.jpg",
+        "instruction": "url_to_instruction3_image.jpg"
+    }
+]

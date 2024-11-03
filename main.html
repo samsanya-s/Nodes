@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Карточка узла</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .card {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 10px;
+            background: white;
+            text-align: center;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1 id="nodeName">Имя узла</h1>
+        <button id="toggleButton">Показать картинку узла</button>
+        <img id="nodeImage" src="" alt="Изображение узла" style="display:none;">
+        <button id="randomButton">Случайный узел</button>
+    </div>
+
+    <script>
+        let nodes = [];
+        let currentNode = null;
+        let imageShown = false;
+
+        // Загрузка данных узлов из JSON файла
+        fetch('nodes.json')
+            .then(response => response.json())
+            .then(data => {
+                nodes = data;
+                getRandomNode(); // Получаем случайный узел при загрузке
+            });
+
+        function getRandomNode() {
+            const randomIndex = Math.floor(Math.random() * nodes.length);
+            currentNode = nodes[randomIndex];
+            document.getElementById('nodeName').textContent = currentNode.name;
+            document.getElementById('nodeImage').style.display = 'none';
+            document.getElementById('toggleButton').textContent = 'Показать картинку узла';
+            imageShown = false;
+        }
+
+        document.getElementById('toggleButton').addEventListener('click', function() {
+            const nodeImage = document.getElementById('nodeImage');
+
+            if (!imageShown) {
+                // Показать изображение узла
+                nodeImage.src = currentNode.image;
+                nodeImage.style.display = 'block';
+                this.textContent = 'Показать инструкцию';
+            } else {
+                // Показать изображение с инструкцией
+                nodeImage.src = currentNode.instruction;
+                this.textContent = 'Показать картинку узла';
+            }
+
+            imageShown = !imageShown;
+        });
+
+        document.getElementById('randomButton').addEventListener('click', getRandomNode);
+    </script>
+</body>
+</html>
