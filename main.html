@@ -4,77 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Карточка узла</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
-        }
-        .card {
-            border: 1px solid #ccc;
-            padding: 20px;
-            border-radius: 10px;
-            background: white;
-            text-align: center;
-        }
-        img {
-            max-width: 100%;
-            height: auto;
-            margin-top: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="card">
-        <h1 id="nodeName">Имя узла</h1>
-        <button id="toggleButton">Показать картинку узла</button>
-        <img id="nodeImage" src="" alt="Изображение узла" style="display:none;">
-        <button id="randomButton">Случайный узел</button>
+    <div class="container d-flex justify-content-center align-items-center vh-100">
+        <div class="card text-center" style="width: 19rem;">
+            <div class="card-body">
+                <div id="timer" class="mt-3">таймер</div> <!-- Блок для таймера -->
+                <h1 class="card-title" id="nodeName">Имя узла</h1>
+                <button class="btn btn-primary" id="toggleButton">Показать картинку узла</button>
+                <img id="nodeImage" src="" alt="Изображение узла" class="img-fluid mt-3" style="display:none;">
+                <div class="arrow mt-4" id="nextNode" style="cursor:pointer; font-size: 24px;">&#8594;</div>
+                
+            </div>
+        </div>
     </div>
-
-    <script>
-        let nodes = [];
-        let currentNode = null;
-        let imageShown = false;
-
-        // Загрузка данных узлов из JSON файла
-        fetch('nodes.json')
-            .then(response => response.json())
-            .then(data => {
-                nodes = data;
-                getRandomNode(); // Получаем случайный узел при загрузке
-            });
-
-        function getRandomNode() {
-            const randomIndex = Math.floor(Math.random() * nodes.length);
-            currentNode = nodes[randomIndex];
-            document.getElementById('nodeName').textContent = currentNode.name;
-            document.getElementById('nodeImage').style.display = 'none';
-            document.getElementById('toggleButton').textContent = 'Показать картинку узла';
-            imageShown = false;
-        }
-
-        document.getElementById('toggleButton').addEventListener('click', function() {
-            const nodeImage = document.getElementById('nodeImage');
-
-            if (!imageShown) {
-                // Показать изображение узла
-                nodeImage.src = currentNode.image;
-                nodeImage.style.display = 'block';
-                this.textContent = 'Показать инструкцию';
-            } else {
-                // Показать изображение с инструкцией
-                nodeImage.src = currentNode.instruction;
-                this.textContent = 'Показать картинку узла';
-            }
-
-            imageShown = !imageShown;
-        });
-
-        document.getElementById('randomButton').addEventListener('click', getRandomNode);
-    </script>
+    
+    <script src="script.js"></script>
 </body>
 </html>
