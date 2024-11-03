@@ -1,9 +1,9 @@
 {
   "name": "nodes",
   "version": "1.0.0",
-  "main": "ыкс.js",
+  "main": "src.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node src.js"
   },
   "keywords": [],
   "author": "",
