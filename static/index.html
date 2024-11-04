@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Click Speed Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        #clickButton { font-size: 20px; padding: 10px 20px; cursor: pointer; display: none; }
+        #result { margin-top: 20px; font-size: 18px; }
+    </style>
+</head>
+<body>
+
+    <h1>Click Speed Test</h1>
+
+    <!-- Регистрация и Вход -->
+    <div id="authDiv">
+        <h2>Register</h2>
+        <input type="text" id="regUsername" placeholder="Username"><br>
+        <input type="password" id="regPassword" placeholder="Password"><br>
+        <button onclick="register()">Register</button>
+
+        <h2>Login</h2>
+        <input type="text" id="loginUsername" placeholder="Username"><br>
+        <input type="password" id="loginPassword" placeholder="Password"><br>
+        <button onclick="login()">Login</button>
+    </div>
+
+    <!-- Основной тест -->
+    <div id="testDiv" style="display: none;">
+        <p>Welcome, <span id="userDisplay"></span>! Press the button as fast as you can!</p>
+        <button id="clickButton">Click me!</button>
+        <div id="result">Time: <span id="timeElapsed">0</span> ms</div>
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <script>
+        let lastClickTime = 0;
+        let firstClick = true;
+
+        // Регистрация
+        function register() {
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+
+            fetch('/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: username, password: password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message || "Registration successful");
+            })
+            .catch(error => console.error("Registration error:", error));
+        }
+
+        // Вход
+        function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: username, password: password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('authDiv').style.display = 'none';
+                    document.getElementById('testDiv').style.display = 'block';
+                    document.getElementById('userDisplay').innerText = username;
+                    document.getElementById('clickButton').style.display = 'inline-block';
+                } else {
+                    alert(data.message || "Login failed");
+                }
+            })
+            .catch(error => console.error("Login error:", error));
+        }
+
+        // Выход
+        function logout() {
+            fetch('/logout', { method: 'POST' })
+            .then(() => {
+                document.getElementById('authDiv').style.display = 'block';
+                document.getElementById('testDiv').style.display = 'none';
+            })
+            .catch(error => console.error("Logout error:", error));
+        }
+
+        // Логика замера времени нажатий
+        document.getElementById('clickButton').addEventListener('click', () => {
+            const currentTime = Date.now();
+
+            if (firstClick) {
+                lastClickTime = currentTime;
+                firstClick = false;
+                return;
+            }
+
+            const timeElapsed = currentTime - lastClickTime;
+            lastClickTime = currentTime;
+            document.getElementById('timeElapsed').innerText = timeElapsed;
+
+            // Отправляем время на сервер
+            fetch('/save_time', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ timeElapsed: timeElapsed })
+            })
+            .then(response => response.json())
+            .then(data => console.log("Data saved:", data))
+            .catch(error => console.error("Error saving data:", error));
+        });
+    </script>
+
+</body>
+</html>
