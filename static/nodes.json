@@ -1,0 +1,92 @@
+[
+    {
+        "name": "Прямой",
+        "image": "/static/nodes/u0.jpg",
+        "instruction": "/static/nodes/ui0.jpg"
+    },
+    {
+        "name": "Восьмёрка",
+        "image": "/static/nodes/u1.jpg",
+        "instruction": "/static/nodes/ui1.jpg"
+    },
+    {
+        "name": "Грейпвайн",
+        "image": "/static/nodes/u2.jpg",
+        "instruction": "/static/nodes/ui2.jpg"
+    },
+    {
+        "name": "Стремя одним концом",
+        "image": "/static/nodes/u3.jpg",
+        "instruction": "/static/nodes/ui3.jpg"
+    },
+    {
+        "name": "Прусик",
+        "image": "/static/nodes/u4.jpg",
+        "instruction": "/static/nodes/ui4.jpg"
+    },
+    {
+        "name": "Булинь",
+        "image": "/static/nodes/u5.jpg",
+        "instruction": "/static/nodes/ui5.jpg"
+    },
+    {
+        "name": "Проводник",
+        "image": "/static/nodes/u6.jpg",
+        "instruction": "/static/nodes/ui6.jpg"
+    },
+    {
+        "name": "Встречный проводник",
+        "image": "/static/nodes/u7.jpg",
+        "instruction": "/static/nodes/ui7.jpg"
+    },
+    {
+        "name": "Австрийский проводник",
+        "image": "/static/nodes/u8.jpg",
+        "instruction": "/static/nodes/ui8.jpg"
+    },
+    {
+        "name": "Австрийский схватывающий",
+        "image": "/static/nodes/u9.jpg",
+        "instruction": "/static/nodes/ui9.jpg"
+    },
+    {
+        "name": "УИАА",
+        "image": "/static/nodes/u10.jpg",
+        "instruction": "/static/nodes/ui10.jpg"
+    },
+    {
+        "name": "Шкотовый",
+        "image": "/static/nodes/u11.jpg",
+        "instruction": "/static/nodes/ui11.jpg"
+    },
+    {
+        "name": "Брамшкотовый",
+        "image": "/static/nodes/u12.jpg",
+        "instruction": "/static/nodes/ui12.jpg"
+    },
+    {
+        "name": "Встречная восьмёрка",
+        "image": "/static/nodes/u13.jpg",
+        "instruction": "/static/nodes/ui13.jpg"
+    },
+    {
+        "name": "Двойной проводник",
+        "image": "/static/nodes/u14.jpg",
+        "instruction": "/static/nodes/ui14.jpg"
+    },
+    {
+        "name": "Двойной булинь",
+        "image": "/static/nodes/u15.jpg",
+        "instruction": "/static/nodes/ui15.jpg"
+    },
+    {
+        "name": "Двойная восьмёрка",
+        "image": "/static/nodes/u16.jpg",
+        "instruction": "/static/nodes/ui16.jpg"
+    },
+    {
+        "name": "Штык",
+        "image": "/static/nodes/u17.jpg",
+        "instruction": "/static/nodes/ui17.jpg"
+    }
+]

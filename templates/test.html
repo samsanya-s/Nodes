@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Движение страницы</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        .content {
+            width: 200vw; /* Ширина контента в 2 раза шире экрана */
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(to right, #ff7e5f, #feb47b);
+            transition: transform 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="content" id="content">Перемещай меня влево-вправо</div>
+
+    <script>
+        let startX = 0;
+        let isDragging = false;
+        let lastX = 0;
+        let movedDistance = 0;
+
+        const content = document.getElementById('content');
+
+        function handleMouseDown(e) {
+            isDragging = true;
+            startX = e.pageX || e.touches[0].pageX;
+        }
+
+        function handleMouseMove(e) {
+            if (!isDragging) return;
+            const currentX = e.pageX || e.touches[0].pageX;
+            movedDistance = currentX - startX;
+            content.style.transform = `translateX(${movedDistance}px)`;
+        }
+
+        function handleMouseUp() {
+            isDragging = false;
+
+            // Если сдвиг более 50 пикселей, отправляем POST-запрос
+            if (Math.abs(movedDistance) >= 50) {
+                fetch('https://example.com/api', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: 'Сдвиг на 50px выполнен' })
+                })
+                .then(response => response.json())
+                .then(data => console.log('POST-запрос выполнен', data))
+                .catch(error => console.error('Ошибка POST-запроса', error));
+            }
+
+            // Возвращаем элемент в исходное положение
+            content.style.transform = 'translateX(0)';
+            movedDistance = 0;
+        }
+
+        // Обработчики событий для мыши
+        content.addEventListener('mousedown', handleMouseDown);
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
+
+        // Обработчики событий для касания
+        content.addEventListener('touchstart', handleMouseDown);
+        window.addEventListener('touchmove', handleMouseMove);
+        window.addEventListener('touchend', handleMouseUp);
+    </script>
+</body>
+</html>
