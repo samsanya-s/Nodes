@@ -1,80 +1,68 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Движение страницы</title>
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            font-family: Arial, sans-serif;
-        }
-        .content {
-            width: 200vw; /* Ширина контента в 2 раза шире экрана */
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(to right, #ff7e5f, #feb47b);
-            transition: transform 0.3s ease;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Карточка с кнопками</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    #cardContainer {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1050; /* Чтобы появлялось поверх контента */
+    }
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1049;
+    }
+  </style>
 </head>
 <body>
-    <div class="content" id="content">Перемещай меня влево-вправо</div>
+  <div class="container text-center mt-5">
+    <button id="showCardBtn" class="btn btn-primary">Показать карточку</button>
+  </div>
 
-    <script>
-        let startX = 0;
-        let isDragging = false;
-        let lastX = 0;
-        let movedDistance = 0;
+  <!-- Карточка -->
+  <div class="overlay" id="overlay"></div>
+  <div id="cardContainer" class="card shadow p-3">
+    <div class="card-body text-center">
+      <h5 class="card-title">Пример карточки</h5>
+      <p class="card-text">Это пример текста внутри карточки.</p>
+      <button class="btn btn-success me-2" id="button1">Кнопка 1</button>
+      <button class="btn btn-danger" id="button2">Кнопка 2</button>
+    </div>
+  </div>
 
-        const content = document.getElementById('content');
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.getElementById("showCardBtn").addEventListener("click", function () {
+      document.getElementById("overlay").style.display = "block";
+      document.getElementById("cardContainer").style.display = "block";
+    });
 
-        function handleMouseDown(e) {
-            isDragging = true;
-            startX = e.pageX || e.touches[0].pageX;
-        }
+    document.getElementById("overlay").addEventListener("click", function () {
+      document.getElementById("overlay").style.display = "none";
+      document.getElementById("cardContainer").style.display = "none";
+    });
 
-        function handleMouseMove(e) {
-            if (!isDragging) return;
-            const currentX = e.pageX || e.touches[0].pageX;
-            movedDistance = currentX - startX;
-            content.style.transform = `translateX(${movedDistance}px)`;
-        }
+    document.getElementById("button1").addEventListener("click", function () {
+      alert("Вы нажали Кнопку 1");
+    });
 
-        function handleMouseUp() {
-            isDragging = false;
-
-            // Если сдвиг более 50 пикселей, отправляем POST-запрос
-            if (Math.abs(movedDistance) >= 50) {
-                fetch('https://example.com/api', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ message: 'Сдвиг на 50px выполнен' })
-                })
-                .then(response => response.json())
-                .then(data => console.log('POST-запрос выполнен', data))
-                .catch(error => console.error('Ошибка POST-запроса', error));
-            }
-
-            // Возвращаем элемент в исходное положение
-            content.style.transform = 'translateX(0)';
-            movedDistance = 0;
-        }
-
-        // Обработчики событий для мыши
-        content.addEventListener('mousedown', handleMouseDown);
-        window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('mouseup', handleMouseUp);
-
-        // Обработчики событий для касания
-        content.addEventListener('touchstart', handleMouseDown);
-        window.addEventListener('touchmove', handleMouseMove);
-        window.addEventListener('touchend', handleMouseUp);
-    </script>
+    document.getElementById("button2").addEventListener("click", function () {
+      alert("Вы нажали Кнопку 2");
+    });
+  </script>
 </body>
 </html>

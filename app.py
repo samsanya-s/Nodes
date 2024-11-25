@@ -24,7 +24,8 @@ def init_db():
         cursor.execute('''CREATE TABLE IF NOT EXISTS users (
                           id INTEGER PRIMARY KEY,
                           username TEXT UNIQUE NOT NULL,
-                          password TEXT NOT NULL
+                          password TEXT NOT NULL,
+                          is_admin BOOL NOT NULL
                       )''')
         cursor.execute('''
                CREATE TABLE IF NOT EXISTS user_node_data (
@@ -73,7 +74,7 @@ def register(username, password):
     try:
         with sqlite3.connect(DATABASE) as conn:
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
+            cursor.execute("INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?)", (username, hashed_password, False))
             conn.commit()
             login(username, password)
         return {'status': 'success', 'message': 'User registered successfully'}

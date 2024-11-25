@@ -1,5 +1,5 @@
 let counter = 3;
-const overlay = document.getElementById('overlay');
+const overlay = document.getElementById('startOverlay');
 mainContent = document.getElementById('mainContent');
 const countdownElement = document.getElementById('countdown');
 const startText = document.getElementById('startText');
@@ -167,6 +167,32 @@ document.getElementById('toggleButton').addEventListener('click', function() {
     imageShown = !imageShown;
 });
 
+function hideOverlay(){
+    document.getElementById("overlay").style.display = "none";
+     document.getElementById("cardContainer").style.display = "none";
+}
+
+document.getElementById("success").addEventListener("click", function () {
+      document.getElementById("textNode").textContent = document.getElementById("nodeName").textContent;
+      document.getElementById("textTime").textContent = document.getElementById("timer").textContent;
+      document.getElementById("overlay").style.display = "block";
+      document.getElementById("cardContainer").style.display = "block";
+    });
+
+//    document.getElementById("overlay").addEventListener("click", function () {
+//
+//    });
+
+document.getElementById("buttonOk").addEventListener("click", function () {
+  hideOverlay();
+  save_time();
+});
+
+document.getElementById("buttonCancel").addEventListener("click", function () {
+  hideOverlay();
+  setOverlay();
+});
+
 document.getElementById('cancel').addEventListener('click', setOverlay);
-document.getElementById('success').addEventListener('click', save_time);
+//document.getElementById('success').addEventListener('click', save_time);
 document.body.addEventListener('click', startCountdown, { once: true });
