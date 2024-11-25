@@ -1,3 +1,6 @@
+import json
+from types import NoneType
+
 from flask import Flask, request, jsonify, session, redirect, url_for, render_template
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
@@ -9,6 +12,7 @@ app.secret_key = 'your_secret_key'  # Замените на более безо�
 
 # Путь к базе данных
 DATABASE = 'users.db'
+NODES = "static\\nodes.json"
 app.config['SESSION_COOKIE_SAMESITE'] = None
 app.config['SESSION_COOKIE_SECURE'] = False
 
@@ -31,7 +35,7 @@ def init_db():
                )
            ''')
         conn.commit()
-        print(conn)
+        # print(conn)
 
 
 init_db()
@@ -154,8 +158,75 @@ def logout():
 @app.route('/', methods=['GET'])
 def home():
     if 'username' in session:
-        return render_template('main.html')
+        return redirect(url_for('main_menu'))
     return redirect(url_for('auth'))
+
+@app.route('/main_menu', methods=['GET'])
+def main_menu():
+    # print(session)
+    user_id = session["username"]
+    if not user_id:
+        return "User not logged in", 403
+
+    conn = sqlite3.connect(DATABASE)
+    db = conn.cursor()
+    results = []
+    with open(NODES, encoding="utf-8") as f:
+        nodes = json.load(f)
+
+    for node in nodes:
+        node_name = node['name']
+
+        # Query for current user
+        user_query = """
+                SELECT 
+                    AVG(timestamp) AS avg_time,
+                    MIN(timestamp) AS best_time
+                FROM user_node_data
+                WHERE user_id = ? AND node_name = ?
+            """
+        user_data = db.execute(user_query, (user_id, node_name)).fetchone()
+
+        # Query for all users
+        all_query = """
+                SELECT 
+                    AVG(timestamp) AS avg_time,
+                    MIN(timestamp) AS best_time
+                FROM user_node_data
+                WHERE node_name = ?
+            """
+        all_data = db.execute(all_query, (node_name,)).fetchone()
+        username_query = """
+                    SELECT username FROM users WHERE id=?
+        """
+        username = db.execute(username_query, (session["username"],)).fetchone()[0]
+        # print(user_data, all_data)
+        results.append({
+            'node_name': node_name,
+            'user_avg_time': time_read(user_data[0]),
+            'user_best_time': time_read(user_data[1]),
+            'all_avg_time': time_read(all_data[0]),
+            'all_best_time': time_read(all_data[1])
+        })
+
+    return render_template('main_menu.html', results=results, username=username)
+
+
+def time_read(n):
+    if type(n) == NoneType:
+        return n
+    n = int(n)
+    milis = n % 100
+    n //= 100
+    sec = n % 60
+    min = n // 60
+    return f"{str(min).rjust(2, "0")}:{str(sec).rjust(2, "0")}:{str(milis).rjust(2, "0")}"
+
+
+@app.route('/main', methods=['GET'])
+def main():
+    return render_template("main.html")
+
 
 
 if __name__ == '__main__':
