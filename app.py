@@ -102,11 +102,7 @@ def register(username, password):
 
     hashed_password = generate_password_hash(password)
     try:
-        # with sqlite3.connect(DATABASE) as conn:
         query_db("INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?)", (username, hashed_password, False))
-            # cursor = conn.cursor()
-            # cursor.execute(, )
-            # conn.commit()
         login(username, password)
         return {'status': 'success', 'message': 'User registered successfully'}
     except sqlite3.IntegrityError:
@@ -114,17 +110,11 @@ def register(username, password):
 
 
 def login(username, password):
-    # with (sqlite3.connect(DATABASE) as conn):
-    #     cursor = conn.cursor()
-    #     cursor.execute("SELECT password, id FROM users WHERE username = ?", (username,))
-    #     answer = cursor.fetchone()
     answer = query_db("SELECT password, id FROM users WHERE username = ?", (username,))
     if answer:
-        # print(answer[0].fetchone())
         user_password, user_id = answer[0]
     else:
         return {'status': 'error', 'message': 'Invalid username'}
-    # print(user_password, cursor.fetchone())
 
     if user_password:
 
@@ -174,31 +164,10 @@ def save_time():
                 )
             '''
     query_db(query_delete, (session["username"], node_name, session["username"], node_name))
-    # conn = sqlite3.connect(DATABASE)
-    # cursor = conn.cursor()
-    # cursor.execute('''
-    #             DELETE FROM user_node_data
-    #             WHERE id IN (
-    #                 SELECT id FROM user_node_data
-    #                 WHERE user_id = ? AND node_name = ?
-    #                 ORDER BY id ASC
-    #                 LIMIT (SELECT CASE WHEN COUNT(*) > 100 THEN COUNT(*) - 100 ELSE 0 END
-    #                        FROM user_node_data
-    #                        WHERE user_id = ? AND node_name = ?)
-    #             )
-    #         ''', (session["username"], node_name, session["username"], node_name))
     query_db('''
             INSERT INTO user_node_data (user_id, node_name, timestamp)
             VALUES (?, ?, ?)
         ''', (session["username"], node_name, timestamp))
-    # cursor.execute('''
-    #         INSERT INTO user_node_data (user_id, node_name, timestamp)
-    #         VALUES (?, ?, ?)
-    #     ''', (session["username"], node_name, timestamp))
-    # conn.commit()
-
-    # conn.commit()
-    # conn.close()
 
     return jsonify({"message": "Data saved successfully"}), 200
 
@@ -217,55 +186,49 @@ def home():
 
 @app.route('/main_menu', methods=['GET'])
 def main_menu():
-    # print(session)
-    user_id = session["username"]
-    if not user_id:
-        return "User not logged in", 403
+    try:
+        user_id = session["username"]
+        if not user_id:
+            return "User not logged in", 403
 
-    # conn = sqlite3.connect(DATABASE)
-    # db = conn.cursor()
-    results = []
-    with open(NODES, encoding="utf-8") as f:
-        nodes = json.load(f)
+        results = []
+        with open(NODES, encoding="utf-8") as f:
+            nodes = json.load(f)
 
-    for node in nodes:
-        node_name = node['name']
+        for node in nodes:
+            node_name = node['name']
 
-        # Query for current user
-        user_query = """
-                SELECT
-                    AVG(timestamp) AS avg_time,
-                    MIN(timestamp) AS best_time
-                FROM user_node_data
-                WHERE user_id = ? AND node_name = ?
+            user_query = """
+                    SELECT
+                        AVG(timestamp) AS avg_time,
+                        MIN(timestamp) AS best_time
+                    FROM user_node_data
+                    WHERE user_id = ? AND node_name = ?
+                """
+            user_data = query_db(user_query, (user_id, node_name), 1)
+            all_query = """
+                    SELECT
+                        AVG(timestamp) AS avg_time,
+                        MIN(timestamp) AS best_time
+                    FROM user_node_data
+                    WHERE node_name = ?
+                """
+            all_data = query_db(all_query, (node_name,), 1)
+            username_query = """
+                        SELECT username, is_admin FROM users WHERE id=?
             """
-        # user_data = db.execute(user_query, (user_id, node_name)).fetchone()
-        user_data = query_db(user_query, (user_id, node_name), 1)
-        # Query for all users
-        all_query = """
-                SELECT
-                    AVG(timestamp) AS avg_time,
-                    MIN(timestamp) AS best_time
-                FROM user_node_data
-                WHERE node_name = ?
-            """
-        # all_data = db.execute(all_query, (node_name,)).fetchone()
-        all_data = query_db(all_query, (node_name,), 1)
-        username_query = """
-                    SELECT username, is_admin FROM users WHERE id=?
-        """
-        # username, is_admin = db.execute(username_query, (session["username"],)).fetchone()
-        username, is_admin = query_db(username_query, (session["username"],), True)
-        # print(user_data, all_data)
-        results.append({
-            'node_name': node_name,
-            'user_avg_time': time_read(user_data[0]),
-            'user_best_time': time_read(user_data[1]),
-            'all_avg_time': time_read(all_data[0]),
-            'all_best_time': time_read(all_data[1])
-        })
+            username, is_admin = query_db(username_query, (session["username"],), True)
+            results.append({
+                'node_name': node_name,
+                'user_avg_time': time_read(user_data[0]),
+                'user_best_time': time_read(user_data[1]),
+                'all_avg_time': time_read(all_data[0]),
+                'all_best_time': time_read(all_data[1])
+            })
 
-    return render_template('main_menu.html', results=results, username=username, is_admin=is_admin)
+        return render_template('main_menu.html', results=results, username=username, is_admin=is_admin)
+    except:
+        return redirect(url_for('auth'))
 
 
 def time_read(n):
@@ -286,6 +249,9 @@ def main():
 
 @app.route('/manage_users', methods=['GET', 'POST'])
 def manage_users():
+    is_admin = query_db("SELECT is_admin FROM users WHERE id=?", (session["username"],), True)
+    if not is_admin:
+        return redirect(url_for('main_menu'))
     if request.method == 'POST':
         data = request.json
         if data['action'] == 'delete_user':
@@ -301,6 +267,9 @@ def manage_users():
 
 @app.route('/manage_nodes', methods=['GET', "POST"])
 def manage_nodes():
+    is_admin = query_db("SELECT is_admin FROM users WHERE id=?", (session["username"],), True)
+    if not is_admin:
+        return redirect(url_for('main_menu'))
     if request.method == 'POST':
         data = request.json
         if data['action'] == 'delete_log':
