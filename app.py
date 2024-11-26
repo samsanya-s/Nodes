@@ -8,13 +8,24 @@ import csv
 import os
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Замените на более безопасный секретный ключ
+app.secret_key = 'FH7O4QVN-ON97323QYC-NVR[Q30NQ]U39-0V389'  # Замените на более безопасный секретный ключ
 
 # Путь к базе данных
 DATABASE = 'users.db'
-NODES = "static\\nodes.json"
+
 app.config['SESSION_COOKIE_SAMESITE'] = None
 app.config['SESSION_COOKIE_SECURE'] = False
+
+def query_db(query, args=(), one=False):
+    """Функция для выполнения SQL-запросов"""
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+    cur.execute(query, args)
+    rv = cur.fetchall()
+    conn.commit()
+    conn.close()
+    return (rv[0] if rv else None) if one else rv
 
 
 # Инициализация базы данных
@@ -37,6 +48,25 @@ def init_db():
            ''')
         conn.commit()
         # print(conn)
+
+def find_nodes_json():
+    # Определяем текущую директорию, где находится скрипт
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Указываем относительный путь к папке static и файлу nodes.json
+    nodes_path = os.path.join(current_dir, "static", "nodes.json")
+
+    # Проверяем, существует ли файл
+    if os.path.exists(nodes_path):
+        return nodes_path
+    else:
+        raise FileNotFoundError(f"Файл 'nodes.json' не найден по пути: {nodes_path}")
+
+# Использование функции
+try:
+    NODES = find_nodes_json()
+except FileNotFoundError as e:
+    print(e)
 
 
 init_db()
@@ -72,32 +102,39 @@ def register(username, password):
 
     hashed_password = generate_password_hash(password)
     try:
-        with sqlite3.connect(DATABASE) as conn:
-            cursor = conn.cursor()
-            cursor.execute("INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?)", (username, hashed_password, False))
-            conn.commit()
-            login(username, password)
+        # with sqlite3.connect(DATABASE) as conn:
+        query_db("INSERT INTO users (username, password, is_admin) VALUES (?, ?, ?)", (username, hashed_password, False))
+            # cursor = conn.cursor()
+            # cursor.execute(, )
+            # conn.commit()
+        login(username, password)
         return {'status': 'success', 'message': 'User registered successfully'}
     except sqlite3.IntegrityError:
         return {'status': 'error', 'message': 'Username already taken'}
 
 
 def login(username, password):
-    with (sqlite3.connect(DATABASE) as conn):
-        cursor = conn.cursor()
-        cursor.execute("SELECT password, id FROM users WHERE username = ?", (username,))
-        user_password, user_id = cursor.fetchone()
-        # print(user_password, cursor.fetchone())
+    # with (sqlite3.connect(DATABASE) as conn):
+    #     cursor = conn.cursor()
+    #     cursor.execute("SELECT password, id FROM users WHERE username = ?", (username,))
+    #     answer = cursor.fetchone()
+    answer = query_db("SELECT password, id FROM users WHERE username = ?", (username,))
+    if answer:
+        # print(answer[0].fetchone())
+        user_password, user_id = answer[0]
+    else:
+        return {'status': 'error', 'message': 'Invalid username'}
+    # print(user_password, cursor.fetchone())
 
-        if user_password:
+    if user_password:
 
-            if check_password_hash(user_password, password):
-                session['username'] = user_id
-                return {'status': 'success', 'message': "User logged in successfully"}
-            else:
-                return {'status': 'error', 'message': 'Invalid password'}
+        if check_password_hash(user_password, password):
+            session['username'] = user_id
+            return {'status': 'success', 'message': "User logged in successfully"}
         else:
-            return {'status': 'error', 'message': 'Invalid username'}
+            return {'status': 'error', 'message': 'Invalid password'}
+    else:
+        return {'status': 'error', 'message': 'Invalid username'}
 
 
 # Маршрут для сохранения данных времени
@@ -125,9 +162,7 @@ def save_time():
         return jsonify({"error": "Invalid time format"}), 400
 
     # Сохраняем данные в базу данных
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    cursor.execute('''
+    query_delete = '''
                 DELETE FROM user_node_data
                 WHERE id IN (
                     SELECT id FROM user_node_data
@@ -137,15 +172,33 @@ def save_time():
                            FROM user_node_data
                            WHERE user_id = ? AND node_name = ?)
                 )
-            ''', (session["username"], node_name, session["username"], node_name))
-    cursor.execute('''
+            '''
+    query_db(query_delete, (session["username"], node_name, session["username"], node_name))
+    # conn = sqlite3.connect(DATABASE)
+    # cursor = conn.cursor()
+    # cursor.execute('''
+    #             DELETE FROM user_node_data
+    #             WHERE id IN (
+    #                 SELECT id FROM user_node_data
+    #                 WHERE user_id = ? AND node_name = ?
+    #                 ORDER BY id ASC
+    #                 LIMIT (SELECT CASE WHEN COUNT(*) > 100 THEN COUNT(*) - 100 ELSE 0 END
+    #                        FROM user_node_data
+    #                        WHERE user_id = ? AND node_name = ?)
+    #             )
+    #         ''', (session["username"], node_name, session["username"], node_name))
+    query_db('''
             INSERT INTO user_node_data (user_id, node_name, timestamp)
             VALUES (?, ?, ?)
         ''', (session["username"], node_name, timestamp))
+    # cursor.execute('''
+    #         INSERT INTO user_node_data (user_id, node_name, timestamp)
+    #         VALUES (?, ?, ?)
+    #     ''', (session["username"], node_name, timestamp))
     # conn.commit()
 
-    conn.commit()
-    conn.close()
+    # conn.commit()
+    # conn.close()
 
     return jsonify({"message": "Data saved successfully"}), 200
 
@@ -169,8 +222,8 @@ def main_menu():
     if not user_id:
         return "User not logged in", 403
 
-    conn = sqlite3.connect(DATABASE)
-    db = conn.cursor()
+    # conn = sqlite3.connect(DATABASE)
+    # db = conn.cursor()
     results = []
     with open(NODES, encoding="utf-8") as f:
         nodes = json.load(f)
@@ -180,27 +233,29 @@ def main_menu():
 
         # Query for current user
         user_query = """
-                SELECT 
+                SELECT
                     AVG(timestamp) AS avg_time,
                     MIN(timestamp) AS best_time
                 FROM user_node_data
                 WHERE user_id = ? AND node_name = ?
             """
-        user_data = db.execute(user_query, (user_id, node_name)).fetchone()
-
+        # user_data = db.execute(user_query, (user_id, node_name)).fetchone()
+        user_data = query_db(user_query, (user_id, node_name), 1)
         # Query for all users
         all_query = """
-                SELECT 
+                SELECT
                     AVG(timestamp) AS avg_time,
                     MIN(timestamp) AS best_time
                 FROM user_node_data
                 WHERE node_name = ?
             """
-        all_data = db.execute(all_query, (node_name,)).fetchone()
+        # all_data = db.execute(all_query, (node_name,)).fetchone()
+        all_data = query_db(all_query, (node_name,), 1)
         username_query = """
-                    SELECT username FROM users WHERE id=?
+                    SELECT username, is_admin FROM users WHERE id=?
         """
-        username = db.execute(username_query, (session["username"],)).fetchone()[0]
+        # username, is_admin = db.execute(username_query, (session["username"],)).fetchone()
+        username, is_admin = query_db(username_query, (session["username"],), True)
         # print(user_data, all_data)
         results.append({
             'node_name': node_name,
@@ -210,7 +265,7 @@ def main_menu():
             'all_best_time': time_read(all_data[1])
         })
 
-    return render_template('main_menu.html', results=results, username=username)
+    return render_template('main_menu.html', results=results, username=username, is_admin=is_admin)
 
 
 def time_read(n):
@@ -221,12 +276,60 @@ def time_read(n):
     n //= 100
     sec = n % 60
     min = n // 60
-    return f"{str(min).rjust(2, "0")}:{str(sec).rjust(2, "0")}:{str(milis).rjust(2, "0")}"
+    return f"{str(min).rjust(2, '0')}:{str(sec).rjust(2, '0')}:{str(milis).rjust(2, '0')}"
 
 
 @app.route('/main', methods=['GET'])
 def main():
     return render_template("main.html")
+
+
+@app.route('/manage_users', methods=['GET', 'POST'])
+def manage_users():
+    if request.method == 'POST':
+        data = request.json
+        if data['action'] == 'delete_user':
+            query_db("DELETE FROM users WHERE id = ?", (data['user_id'],))
+            query_db("DELETE FROM user_node_data WHERE user_id = ?", (data['user_id'],))
+        elif data['action'] == 'make_admin':
+            query_db("UPDATE users SET is_admin = 1 WHERE id = ?", (data['user_id'],))
+        return jsonify({'success': True})
+
+    users = query_db("SELECT * FROM users")
+    return render_template('manage_users.html', users=users)
+
+
+@app.route('/manage_nodes', methods=['GET', "POST"])
+def manage_nodes():
+    if request.method == 'POST':
+        data = request.json
+        if data['action'] == 'delete_log':
+            query_db("DELETE FROM user_node_data WHERE id = ?", (data['log_id'],))
+            return jsonify({'success': True})
+
+    user_filter = request.args.getlist('user_id')
+    node_filter = request.args.getlist('node')
+    sort_order = request.args.get('sort_order', 'asc')
+
+    query = "SELECT user_node_data.id, user_node_data.user_id, user_node_data.node_name, user_node_data.timestamp, users.username as user_name FROM user_node_data JOIN users ON user_node_data.user_id = users.id WHERE 1=1"
+    params = []
+
+    if user_filter:
+        query += " AND user_node_data.user_id IN ({})".format(','.join(['?'] * len(user_filter)))
+        params.extend(user_filter)
+
+    if node_filter:
+        query += " AND user_node_data.node_name IN ({})".format(','.join(['?'] * len(node_filter)))
+        # print(node_filter)
+        params.extend(node_filter)
+
+    query += f" ORDER BY user_node_data.timestamp {sort_order.upper()}"
+
+    logs = query_db(query, params)
+    users = query_db("SELECT id, username FROM users")
+    nodes = query_db("SELECT DISTINCT node_name FROM user_node_data")
+
+    return render_template('manage_nodes.html', logs=logs, users=users, nodes=nodes)
 
 
 

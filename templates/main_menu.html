@@ -51,9 +51,17 @@
                         </div>
                         <div class="carousel-item">
                             <div class="d-flex flex-column justify-content-center align-items-center item-content">
+                                {% if is_admin %}
+                                <h5>Админ панель</h5>
+                                 {% else %}
                                 <h5>............</h5>
+                                {% endif %}
                                 <div class="text-center mt-3 mr-6">
-                                    <button class="btn btn-secondary">В разработке</button>
+                                    {% if is_admin %}
+                                    <a href="/manage_users" class="btn btn-success">Перейти</a>
+                                    {% else %}
+                                    <button class="btn btn-secondary">Недоступно</button>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>

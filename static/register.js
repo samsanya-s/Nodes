@@ -1,5 +1,6 @@
 let lastClickTime = 0;
 let firstClick = true;
+let is_register = false;
 
 // Регистрация
 function register() {
@@ -50,6 +51,17 @@ function logout() {
     .catch(error => console.error("Logout error:", error));
 }
 
+function toggleMode() {
+    console.log(1);
+    is_register = !is_register;
+    if (is_register){
+        document.getElementById('loginBtn').textContent = "Зарегистрироваться";
+    }
+    else{
+        document.getElementById('loginBtn').textContent = "Войти";
+    }
+}
+document.getElementById('toggleMode').addEventListener("change", toggleMode);
 // Логика замера времени нажатий
 //document.getElementById('clickButton').addEventListener('click', () => {
 //    const currentTime = Date.now();
