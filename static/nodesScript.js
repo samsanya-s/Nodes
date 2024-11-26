@@ -13,6 +13,7 @@ circle.style.strokeDasharray = `${circumference} ${circumference}`;
 circle.style.strokeDashoffset = `${circumference}`;
 
 let nodes = [];
+let work_steck_nodes = []
 let last_nodes = [];
 const count_last_nodes = 5;
 let currentNode = null;
@@ -38,11 +39,11 @@ fetch('static\\nodes.json')
         console.error('Ошибка загрузки JSON:', error);
     });
 
+
 function setOverlay(){
     counter = 3
-//    mainContent.classList.add('hidden');
+
     overlay.classList.add('d-flex');
-//    document.body.addEventListener('click', startCountdown, { once: true });
 }
 
 function setProgress(percent) {
@@ -51,7 +52,6 @@ function setProgress(percent) {
 }
 
 function startCountdown() {
-    console.log(0);
     startText.classList.add('hidden');
     circleContainer.classList.remove('hidden');
     circleContainer.classList.add('circle-container');
@@ -69,34 +69,27 @@ function startCountdown() {
         }
         if (counter > 0) {
             countdownElement.textContent = counter > 0 ? counter : '';
-//            console.log(currentCount / intervalDuration * 100);
             setProgress(currentCount / intervalDuration * 100);
         } else {
-            console.log(1);
             startText.classList.remove('hidden');
             circleContainer.classList.remove('circle-container');
             circleContainer.classList.add('hidden');
             overlay.classList.remove('d-flex');
-//            mainContent.classList.remove('hidden');
             getRandomNode()
-//                    overlay.style.display = 'none';
-
             clearInterval(countdownInterval);
         }
     }, intervalDuration / countPerCircle);
 }
 
 function getRandomNode() {
-    let randomIndex = Math.floor(Math.random() * nodes.length);
-    while (randomIndex in last_nodes) {
-        randomIndex = Math.floor(Math.random() * nodes.length);
+    if (!work_steck_nodes.length){
+        for (let i = 0; i < nodes.length; i++){
+             work_steck_nodes[i] = i;
+            }
     }
-
-    last_nodes.push(randomIndex);
-    if (last_nodes.length > count_last_nodes) {
-        last_nodes.shift();
-    }
-//    const randomIndex = 1;
+    let n = Math.floor(Math.random() * (work_steck_nodes.length - 1))
+    let randomIndex = work_steck_nodes[n];
+    work_steck_nodes.splice(n, 1);
 
     currentNode = nodes[randomIndex];
     document.getElementById('nodeName').textContent = currentNode.name;
