@@ -40,9 +40,9 @@ fetch('static\\nodes.json')
 
 function setOverlay(){
     counter = 3
-    mainContent.classList.add('hidden');
+//    mainContent.classList.add('hidden');
     overlay.classList.add('d-flex');
-    document.body.addEventListener('click', startCountdown, { once: true });
+//    document.body.addEventListener('click', startCountdown, { once: true });
 }
 
 function setProgress(percent) {
@@ -51,7 +51,7 @@ function setProgress(percent) {
 }
 
 function startCountdown() {
-
+    console.log(0);
     startText.classList.add('hidden');
     circleContainer.classList.remove('hidden');
     circleContainer.classList.add('circle-container');
@@ -72,11 +72,12 @@ function startCountdown() {
 //            console.log(currentCount / intervalDuration * 100);
             setProgress(currentCount / intervalDuration * 100);
         } else {
+            console.log(1);
             startText.classList.remove('hidden');
             circleContainer.classList.remove('circle-container');
             circleContainer.classList.add('hidden');
             overlay.classList.remove('d-flex');
-            mainContent.classList.remove('hidden');
+//            mainContent.classList.remove('hidden');
             getRandomNode()
 //                    overlay.style.display = 'none';
 
@@ -128,7 +129,7 @@ function startTimer() {
             secondEplaced -= 60;
             minuteEplaced++;
         }
-        document.getElementById('timer').textContent = 'Время: ' + addLeadingNumberZeros(minuteEplaced, 2) + ":" + addLeadingNumberZeros(secondEplaced, 2) + ":" + addLeadingNumberZeros(milisecondEplaced, 2);
+        document.getElementById('timer').textContent = addLeadingNumberZeros(minuteEplaced, 2) + ":" + addLeadingNumberZeros(secondEplaced, 2) + ":" + addLeadingNumberZeros(milisecondEplaced, 2);
     }, 10); // Обновление каждую секунду
 }
 
@@ -145,7 +146,7 @@ function logout() {
 function save_time(){
     fetch('/save_time', { method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ node: document.getElementById('nodeName').textContent, time: document.getElementById('timer').textContent })
+                          body: JSON.stringify({ node: document.getElementById('nodeName').textContent, time: document.getElementById('textTime').textContent })
      }).catch(error => console.error("error:", error));
     setOverlay();
 }
@@ -175,6 +176,7 @@ function hideOverlay(){
 document.getElementById("success").addEventListener("click", function () {
       document.getElementById("textNode").textContent = document.getElementById("nodeName").textContent;
       document.getElementById("textTime").textContent = document.getElementById("timer").textContent;
+      resetTimer();
       document.getElementById("overlay").style.display = "block";
       document.getElementById("cardContainer").style.display = "block";
     });
@@ -195,4 +197,4 @@ document.getElementById("buttonCancel").addEventListener("click", function () {
 
 document.getElementById('cancel').addEventListener('click', setOverlay);
 //document.getElementById('success').addEventListener('click', save_time);
-document.body.addEventListener('click', startCountdown, { once: true });
+document.getElementById("startOverlay").addEventListener('click', startCountdown);

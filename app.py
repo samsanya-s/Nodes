@@ -146,8 +146,8 @@ def save_time():
 
     try:
         # Преобразуем время в стандартный формат
-        mn = [600, 60, 1]
-        timestamp = sum([int(el) * mn[i] for i, el in enumerate(timestamp.split(":")[1:])])
+        mn = [6000, 100, 1]
+        timestamp = sum([int(el) * mn[i] for i, el in enumerate(timestamp.split(":"))])
     except ValueError:
         return jsonify({"error": "Invalid time format"}), 400
 
@@ -231,15 +231,15 @@ def main_menu():
         return redirect(url_for('auth'))
 
 
-def time_read(n):
-    if type(n) == NoneType:
-        return n
-    n = int(n)
-    milis = n % 100
-    n //= 100
-    sec = n % 60
-    min = n // 60
-    return f"{str(min).rjust(2, '0')}:{str(sec).rjust(2, '0')}:{str(milis).rjust(2, '0')}"
+def time_read(milliseconds):
+    if type(milliseconds) == NoneType:
+        return milliseconds
+    minutes = int(milliseconds // 6000)
+    seconds = int(milliseconds % 6000) // 100
+    remaining_milliseconds = int(milliseconds % 100)
+
+    # Форматируем строку
+    return f"{minutes:02}:{seconds:02}:{remaining_milliseconds:02}"
 
 
 @app.route('/main', methods=['GET'])
