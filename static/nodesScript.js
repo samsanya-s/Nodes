@@ -24,31 +24,37 @@ let secondEplaced = 0;
 let minuteEplaced = 0;
 let type_r = document.getElementById("type_r").textContent;
 
-// Преобразуем строки времени в миллисекунды
+//// Преобразуем строки времени в миллисекунды
 function parseTimeToMs(time) {
-    const [minutes, seconds, milliseconds] = time.split(':').map(Number);
-    return (minutes * 60 * 100) + (seconds * 100) + milliseconds;
-}
-
-// Преобразуем миллисекунды обратно в формат "минуты:секунды:миллисекунды"
-function formatMsToTime(ms) {
-    const minutes = Math.floor(ms / (60 * 100));
-    const seconds = Math.floor((ms % (60 * 100)) / 100);
-    const milliseconds = ms % 100;
-    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}:${String(milliseconds).padStart(2, '0')}`;
-}
-
-function timeDifference(time1, time2) {
-    const ms1 = parseTimeToMs(time1);
-    const ms2 = parseTimeToMs(time2);
-
-    // Рассчитываем разницу и предотвращаем отрицательные значения
-    let difference = formatMsToTime(Math.abs(ms1 - ms2));
-    if (ms1 < ms2){
-        difference = "-" + difference;
+    let minus = 1;
+    if (time[0] == "-"){
+        minus = -1;
     }
-    return difference;
+    const [minutes, seconds, milliseconds] = time.split(':').map(Number);
+    return minus*(Math.abs(minutes * 60 * 100) + (seconds * 100) + milliseconds);
 }
+//
+//// Преобразуем миллисекунды обратно в формат "минуты:секунды:миллисекунды"
+//function formatMsToTime(ms) {
+//    const minutes = Math.floor(ms / (60 * 100));
+//    const seconds = Math.floor((ms % (60 * 100)) / 100);
+//    const milliseconds = ms % 100;
+//    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}:${String(milliseconds).padStart(2, '0')}`;
+//}
+//
+//function timeDifference(time1, time2) {
+//    const ms1 = parseTimeToMs(time1);
+//    const ms2 = parseTimeToMs(time2);
+//
+//    // Рассчитываем разницу и предотвращаем отрицательные значения
+//    let difference = formatMsToTime(Math.abs(ms1 - ms2));
+//    if (ms1 < ms2){
+//        difference = "-" + difference;
+//    }
+//    return difference;
+//}
+
+
 let path_text = "";
 if (type_r == 2){
     path_text = 'static\\nodes.json';
@@ -188,14 +194,13 @@ function logout() {
 
 function save_time(){
     let node_text = "";
-    let time_text = "";
+    let time_text = document.getElementById('textTime').textContent;
     if (type_r == 2){
         node_text = document.getElementById('nodeName').textContent;
-        time_text = document.getElementById('textTime').textContent;
+
     }
     else if (type_r == 1){
         node_text = "3 узла";
-        time_text = document.getElementById('textTime').textContent;
     }
     fetch('/save_time', { method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
@@ -210,23 +215,19 @@ function hideOverlay(){
 }
 
 document.getElementById("success").addEventListener("click", function () {
+        document.getElementById("textTime").textContent = document.getElementById("timer").textContent;
         if (type_r == 2){
             document.getElementById("textNode").textContent = document.getElementById("nodeName").textContent;
-      document.getElementById("textTime").textContent = document.getElementById("timer").textContent;
         }
         else if (type_r == 1){
-            const diff = timeDifference("01:00:00", document.getElementById("timer").textContent);
-            if (diff[0] == "-"){
+            if (parseTimeToMs(document.getElementById("timer").textContent) > 5999){
                 document.getElementById("textBlock").textContent = "Карточка не выполнена";
                 document.getElementById("textBlock").style.color = "red";
-
-                 document.getElementById("textTime").textContent = diff;
                  document.getElementById("textTime").style.color = "red";
             }
             else{
                  document.getElementById("textBlock").textContent = "Карточка выполнена";
                 document.getElementById("textBlock").style.color = "green";
-                document.getElementById("textTime").textContent = diff;
                 document.getElementById("textTime").style.color = "green";
             }
         }
