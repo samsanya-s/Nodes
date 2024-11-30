@@ -195,7 +195,7 @@ function save_time(){
     }
     else if (type_r == 1){
         node_text = "3 узла";
-        time_text = timeDifference("01:00:00", document.getElementById('textTime').textContent);
+        time_text = timeDifference(document.getElementById('textTime').textContent, "01:00:00");
     }
     fetch('/save_time', { method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
