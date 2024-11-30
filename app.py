@@ -193,11 +193,10 @@ def main_menu():
 
         results = []
         with open(NODES, encoding="utf-8") as f:
-            nodes = json.load(f)
+            nodes = ["3 узла"] + list(map(lambda x: x["name"], json.load(f)))
 
-        for node in nodes:
-            node_name = node['name']
 
+        for node_name in nodes:
             user_query = """
                     SELECT
                         AVG(timestamp) AS avg_time,
@@ -244,7 +243,9 @@ def time_read(milliseconds):
 
 @app.route('/main', methods=['GET'])
 def main():
-    return render_template("main.html")
+    type_ = int(request.args.get('type'))
+    # print(type_)
+    return render_template("main.html", type_r=type_)
 
 
 @app.route('/manage_users', methods=['GET', 'POST'])
