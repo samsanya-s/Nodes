@@ -187,6 +187,7 @@ def home():
 @app.route('/main_menu', methods=['GET'])
 def main_menu():
     try:
+        error = request.args.get('error')
         user_id = session["username"]
         if not user_id:
             return "User not logged in", 403
@@ -225,7 +226,8 @@ def main_menu():
                 'all_best_time': time_read(all_data[1])
             })
 
-        return render_template('main_menu.html', results=results, username=username, is_admin=is_admin)
+        return render_template('main_menu.html', results=results, username=username,
+                               is_admin=is_admin, error=error)
     except:
         return redirect(url_for('auth'))
 
@@ -244,8 +246,12 @@ def time_read(milliseconds):
 @app.route('/main', methods=['GET'])
 def main():
     type_ = int(request.args.get('type'))
+    selected = request.args.get('selected')
+    if not selected:
+        return redirect('/main_menu?error=no_nodes')
+
     # print(type_)
-    return render_template("main.html", type_r=type_)
+    return render_template("main.html", type_r=type_, sel_nodes=selected)
 
 
 @app.route('/manage_users', methods=['GET', 'POST'])

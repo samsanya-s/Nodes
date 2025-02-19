@@ -23,6 +23,7 @@ let milisecondEplaced = 0; // Переменная для хранения вр�
 let secondEplaced = 0;
 let minuteEplaced = 0;
 let type_r = document.getElementById("type_r").textContent;
+let sel_nodes = document.getElementById("sel_nodes").textContent.split(",").map(Number);
 
 //// Преобразуем строки времени в миллисекунды
 function parseTimeToMs(time) {
@@ -33,26 +34,6 @@ function parseTimeToMs(time) {
     const [minutes, seconds, milliseconds] = time.split(':').map(Number);
     return minus*(Math.abs(minutes * 60 * 100) + (seconds * 100) + milliseconds);
 }
-//
-//// Преобразуем миллисекунды обратно в формат "минуты:секунды:миллисекунды"
-//function formatMsToTime(ms) {
-//    const minutes = Math.floor(ms / (60 * 100));
-//    const seconds = Math.floor((ms % (60 * 100)) / 100);
-//    const milliseconds = ms % 100;
-//    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}:${String(milliseconds).padStart(2, '0')}`;
-//}
-//
-//function timeDifference(time1, time2) {
-//    const ms1 = parseTimeToMs(time1);
-//    const ms2 = parseTimeToMs(time2);
-//
-//    // Рассчитываем разницу и предотвращаем отрицательные значения
-//    let difference = formatMsToTime(Math.abs(ms1 - ms2));
-//    if (ms1 < ms2){
-//        difference = "-" + difference;
-//    }
-//    return difference;
-//}
 
 
 let path_text = "";
@@ -71,7 +52,11 @@ fetch(path_text)
         return response.json();
     })
     .then(data => {
-        nodes = data;
+        let filteredData = data.filter(item => sel_nodes.includes(item.value));
+        nodes = filteredData;
+        console.log(sel_nodes);
+        console.log(data);
+        console.log(nodes);
 
     })
     .catch(error => {

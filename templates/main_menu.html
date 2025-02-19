@@ -6,13 +6,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KnotsPro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         .item-content{
+        position: relative;
             height: 300px;
              border: 5px solid #f8f9fa;
              border-radius: 10px;
         }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 160px;
+            max-height: 150px;
+            overflow-y: auto;
+            box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+            padding: 10px;
+            z-index: 1;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
     </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch('static/nodes.json')
+                .then(response => response.json())
+                .then(data => {
+                   const dropdownContent = document.getElementById("dropdown-content");
+                    let savedSelections = JSON.parse(localStorage.getItem("selectedOptions")) || [];
+
+                    let selectAllLabel = document.createElement("label");
+                    selectAllLabel.classList.add("d-block", "form-check", "fw-bold");
+                    selectAllLabel.innerHTML = `<input id="select-all" class="form-check-input" type="checkbox"> Все`;
+                    dropdownContent.appendChild(selectAllLabel);
+
+                    selectAllLabel.querySelector("input").addEventListener("change", function() {
+                        let checkboxes = dropdownContent.querySelectorAll(".option-checkbox");
+                        checkboxes.forEach(checkbox => {
+                            checkbox.checked = this.checked;
+                        });
+                        saveSelections();
+                    });
+
+                    data.forEach(option => {
+                        let label = document.createElement("label");
+                        label.classList.add("d-block", "form-check");
+                        label.innerHTML = `<input class="form-check-input option-checkbox" type="checkbox" value="${option.value}"> ${option.name}`;
+                        dropdownContent.appendChild(label);
+                    });
+                    document.querySelectorAll(".option-checkbox").forEach(checkbox => {
+                        if (savedSelections.includes(checkbox.value)) {
+                            checkbox.checked = true;
+                        }
+                        checkbox.addEventListener("change", saveSelections);
+                    });
+                })
+                .catch(error => console.error("Ошибка загрузки JSON:", error));
+        });
+        function saveSelections() {
+            let selectedValues = [];
+            document.querySelectorAll(".option-checkbox:checked").forEach(checkbox => {
+                selectedValues.push(checkbox.value);
+            });
+            localStorage.setItem("selectedOptions", JSON.stringify(selectedValues));
+        }
+    </script>
     <link rel="icon" href="static/icon.png" type="image/png">
 </head>
 
@@ -33,11 +93,22 @@
                 <div id="modeCarousel" class="carousel slide" style="width: 80%; max-width: 500px;">
                     <div class="carousel-inner">
                         <div class="carousel-item active">
-                            <div class="d-flex flex-column justify-content-center align-items-center item-content">
+                            <div class="d-flex flex-column justify-content-center align-items-center item-content position-relative w-100">
+                                <!-- Dropdown в верхнем левом углу -->
+                                <div class="dropdown position-absolute top-0 m-2" style="left: 15%;">
+                                    <button class="btn btn-outline-secondary">
+                                        <i class="fas fa-cog"></i> <!-- Иконка настроек -->
+                                    </button>
+                                    <div id="dropdown-content" class="dropdown-content p-2 border rounded"></div>
+                                    {% if error == "no_nodes" %}
+                                        <div class="text-danger mt-1">Выберите хотя бы один узел</div>
+                                    {% endif %}
+                                </div>
+
                                 <h5>Узлы</h5><br>
                                 <div class="text-center mt-3 mr-6">
-                                    <a href="/main?type=2" class="ml-auto btn btn-success">Начать</a>
-<!--                                    <button class=""></button>-->
+                                    <button class="ml-auto btn btn-success" onclick="submitSelection()">Начать</button>
+<!--                                    <a href="" class=""></a>-->
                                 </div>
                             </div>
                         </div>
@@ -57,22 +128,17 @@
                                 </div>
                             </div>
                         </div>
+                        {% if is_admin %}
                         <div class="carousel-item">
                             <div class="d-flex flex-column justify-content-center align-items-center item-content">
-                                {% if is_admin %}
+
                                 <h5>Админ панель</h5>
-                                 {% else %}
-                                <h5>............</h5>
-                                {% endif %}
                                 <div class="text-center mt-3 mr-6">
-                                    {% if is_admin %}
                                     <a href="/manage_users" class="btn btn-success">Перейти</a>
-                                    {% else %}
-                                    <button class="btn btn-secondary">Недоступно</button>
-                                    {% endif %}
                                 </div>
                             </div>
                         </div>
+                        {% endif %}
                     </div>
                     <button class="carousel-control-prev btn btn-secondary" type="button" data-bs-target="#modeCarousel" data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -90,31 +156,42 @@
                 <h4 class="text-center">Статистика</h4>
                 <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
                     <table class="table table-bordered" >
-                    <thead class="table-light">
-                        <tr>
-                            <th>Узел</th>
-                            <th>Среднее время</th>
-                            <th>Лучшее время</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for row in results %}
-                        <tr>
-                            <td>{{ row.node_name }}</td>
-                            <td>{{ row.user_avg_time or 'N/A' }} ({{ row.all_avg_time or 'N/A' }})</td>
-                            <td>{{ row.user_best_time or 'N/A' }} ({{ row.all_best_time or 'N/A' }})</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                        <thead class="table-light" style="position: sticky; top: 0; z-index: 2; background: white;">
+                            <tr>
+                                <th>Узел</th>
+                                <th>Среднее время</th>
+                                <th>Лучшее время</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in results %}
+                            <tr>
+                                <td>{{ row.node_name }}</td>
+                                <td>{{ row.user_avg_time or 'N/A' }} ({{ row.all_avg_time or 'N/A' }})</td>
+                                <td>{{ row.user_best_time or 'N/A' }} ({{ row.all_best_time or 'N/A' }})</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-
             </div>
+
         </div>
     </div>
 
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function submitSelection() {
+            let selectedValues = [];
+            document.querySelectorAll('#dropdown-content input:checked').forEach(checkbox => {
+                selectedValues.push(checkbox.value);
+            });
+
+            let queryString = selectedValues.length ? '&selected=' + selectedValues.join(',') : '';
+            window.location.href = '/main?type=2' + queryString;
+        }
+    </script>
 </body>
 
 </html>
