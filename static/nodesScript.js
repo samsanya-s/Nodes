@@ -54,14 +54,9 @@ fetch(path_text)
     .then(data => {
         let filteredData = data.filter(item => sel_nodes.includes(item.value));
         nodes = filteredData;
-        console.log(sel_nodes);
-        console.log(data);
-        console.log(nodes);
-
     })
     .catch(error => {
         console.error('Ошибка загрузки JSON:', error);
-        console.log(error);
     });
 
 
@@ -197,14 +192,44 @@ function save_time(){
 function hideOverlay(){
     document.getElementById("overlay").style.display = "none";
      document.getElementById("cardContainer").style.display = "none";
+     document.getElementById('averageTime').textContent = "";
+}
+
+async function fetchAverageTime(node_name) {
+    try {
+        const response = await fetch("/get_time?node=" + node_name); // Запрос к серверу Flask
+        if (!response.ok) {
+            throw new Error('Ошибка сети');
+        }
+        const data = await response.json(); // Получаем JSON-ответ
+        if (data.time){
+            let cur_time = parseTimeToMs(document.getElementById("textTime").textContent);
+            console.log(cur_time);
+            if (cur_time > data.time){
+                document.getElementById('averageTime').textContent = "медленее на " +  (cur_time - data.time) + "мс";
+                document.getElementById('averageTime').style.color = "red";
+            }
+            else{
+                document.getElementById('averageTime').textContent = "быстрее на " +  (data.time - cur_time) + "мс";
+                document.getElementById('averageTime').style.color = "green";
+            }
+        }
+
+
+    } catch (error) {
+        console.error('Ошибка получения данных:', error);
+    }
 }
 
 document.getElementById("success").addEventListener("click", function () {
+
         document.getElementById("textTime").textContent = document.getElementById("timer").textContent;
         if (type_r == 2){
             document.getElementById("textNode").textContent = document.getElementById("nodeName").textContent;
+            fetchAverageTime(document.getElementById("nodeName").textContent);
         }
         else if (type_r == 1){
+            fetchAverageTime("3 узла");
             if (parseTimeToMs(document.getElementById("timer").textContent) > 5999){
                 document.getElementById("textBlock").textContent = "Карточка не выполнена";
                 document.getElementById("textBlock").style.color = "red";

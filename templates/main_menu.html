@@ -56,12 +56,20 @@
                         label.innerHTML = `<input class="form-check-input option-checkbox" type="checkbox" value="${option.value}"> ${option.name}`;
                         dropdownContent.appendChild(label);
                     });
-                    document.querySelectorAll(".option-checkbox").forEach(checkbox => {
-                        if (savedSelections.includes(checkbox.value)) {
+                    if (savedSelections.length == 0) {
+                        document.querySelectorAll(".option-checkbox").forEach(checkbox => {
                             checkbox.checked = true;
-                        }
-                        checkbox.addEventListener("change", saveSelections);
-                    });
+                            checkbox.addEventListener("change", saveSelections);
+                        });
+                    }
+                    else {
+                        document.querySelectorAll(".option-checkbox").forEach(checkbox => {
+                            if (savedSelections.includes(checkbox.value)) {
+                                checkbox.checked = true;
+                            }
+                            checkbox.addEventListener("change", saveSelections);
+                        });
+                    }
                 })
                 .catch(error => console.error("Ошибка загрузки JSON:", error));
         });

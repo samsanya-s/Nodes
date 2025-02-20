@@ -307,7 +307,18 @@ def manage_nodes():
 
     return render_template('manage_nodes.html', logs=logs, users=users, nodes=nodes)
 
+@app.route('/get_time', methods=['GET'])
+def getTime():
+    node = request.args.get('node')
 
+    user_query = """
+                        SELECT
+                            AVG(timestamp) AS avg_time
+                        FROM user_node_data
+                        WHERE user_id = ? AND node_name = ?
+                    """
+    user_data = query_db(user_query, (session["username"], node), 1)[0]
+    return jsonify({'time': user_data})
 
 if __name__ == '__main__':
     app.run(debug=True)
