@@ -52,8 +52,13 @@ fetch(path_text)
         return response.json();
     })
     .then(data => {
-        let filteredData = data.filter(item => sel_nodes.includes(item.value));
-        nodes = filteredData;
+        if (type_r == 1){
+            nodes = data;
+        }
+        else{
+            let filteredData = data.filter(item => sel_nodes.includes(item.value));
+            nodes = filteredData;
+        }
     })
     .catch(error => {
         console.error('Ошибка загрузки JSON:', error);
@@ -93,6 +98,7 @@ function getRandomNode() {
     else{
         if (type_r == 1){
             let currentCard = nodes[randomIndex];
+            console.log(nodes);
             for (let i = 0; i < 3; i++){
                 document.getElementById(`point${i + 1}`).textContent = currentCard[i];
             }
@@ -204,13 +210,12 @@ async function fetchAverageTime(node_name) {
         const data = await response.json(); // Получаем JSON-ответ
         if (data.time){
             let cur_time = parseTimeToMs(document.getElementById("textTime").textContent);
-            console.log(cur_time);
             if (cur_time > data.time){
-                document.getElementById('averageTime').textContent = "медленее на " +  (cur_time - data.time) + "мс";
+                document.getElementById('averageTime').textContent = "медленее на " + ((cur_time - data.time) / 100).toFixed(1) + "с";
                 document.getElementById('averageTime').style.color = "red";
             }
             else{
-                document.getElementById('averageTime').textContent = "быстрее на " +  (data.time - cur_time) + "мс";
+                document.getElementById('averageTime').textContent = "быстрее на " + ((-cur_time + data.time) / 100).toFixed(1) + "с";
                 document.getElementById('averageTime').style.color = "green";
             }
         }

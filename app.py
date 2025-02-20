@@ -247,7 +247,7 @@ def time_read(milliseconds):
 def main():
     type_ = int(request.args.get('type'))
     selected = request.args.get('selected')
-    if not selected:
+    if not selected and type_ == 2:
         return redirect('/main_menu?error=no_nodes')
 
     # print(type_)
