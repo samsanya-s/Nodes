@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KnotsPro</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="icon" href="static/icon.png" type="image/png">
+</head>
+<body>
+<div class="container d-flex justify-content-center align-items-center vh-100">
+    <!-- Регистрация и Вход -->
+    <div id="authDiv" class="card p-4" style="max-width: 400px; width:100%;">
+        <h3 class="text-center mb-4">Авторизация</h3>
+        <form id="authForm" method="POST" action="/auth" class="card-body">
+            <div class="form-group">
+                <label for="username">Логин</label>
+                <input name="username" type="text" id="username" placeholder="Логин" class="form-control" autocomplete="username">
+                {% if error == "Username are required" %}
+                    <div class="text-danger mt-1" id="loginError1" >Логин неправильный</div>
+                {% elif error == "Username already taken" %}
+                    <div class="text-danger mt-1" id="loginError2">Этот логин уже зарегистрирован</div>
+                {% elif error == "Invalid username" %}
+                    <div class="text-danger mt-1" id="loginError3">Логин не существует</div>
+                {% endif %}
+            </div>
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input name="password" type="password" id="password" placeholder="Password" class="form-control" autocomplete="current-password">
+                 {% if error == "Invalid password" %}
+                <div class="text-danger mt-1" id="passwordError1">Неверный пароль</div>
+                {% elif error == "Password are required" %}
+                    <div class="text-danger mt-1" id="passwordError2">Некорректный пароль</div>
+                {% endif %}
+            </div>
+            <div class="d-flex justify-content-between mt-4">
+                <button type="submit" id="loginBtn" class="btn btn-primary">Войти</button>
+                <div class="custom-control custom-checkbox">
+                    <input type="checkbox" class="custom-control-input" id="toggleMode" name="is_register">
+
+                    <label class="custom-control-label" for="toggleMode">Регистрация</label>
+                </div>
+            </div>
+
+        </form>
+        </div>
+</div>
+    <script src="static\register.js"></script>
+</body>
+</html>

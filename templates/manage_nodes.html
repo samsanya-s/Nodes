@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logs</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Logs</h1>
+    <form method="get">
+        <label for="user_id">Filter by User:</label>
+        <select name="user_id" id="user_id" multiple>
+            {% for user in users %}
+            <option value="{{ user.id }}">{{ user.username }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="node">Filter by Node:</label>
+        <select name="node" id="node" multiple>
+            {% for node in nodes %}
+            <option value="{{ node.node_name }}">{{ node.node_name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="sort_order">Sort by Time:</label>
+        <select name="sort_order" id="sort_order">
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+        </select>
+
+        <button type="submit">Apply Filters</button>
+    </form>
+
+    <table border="1">
+        <tr>
+            <th>User</th>
+            <th>Node</th>
+            <th>Time</th>
+            <th>Actions</th>
+        </tr>
+        {% for log in logs %}
+        <tr>
+            <td>{{ log.user_name }}</td>
+            <td>{{ log.node_name }}</td>
+            <td>{{ log.timestamp }}</td>
+            <td>
+                <button onclick="deleteLog({{ log.id }})">Delete</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <a href="\main_menu">Вернуться</a>
+    <a href="\manage_users">Пользователи</a>
+    <script>
+        function deleteLog(logId) {
+            $.ajax({
+                url: '/manage_nodes',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ action: 'delete_log', log_id: logId }),
+                success: function() {
+                    location.reload();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

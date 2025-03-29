@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Users</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Manage Users</h1>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Admin</th>
+            <th>Actions</th>
+        </tr>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ 'Yes' if user.is_admin else 'No' }}</td>
+            <td>
+                <button onclick="deleteUser({{ user.id }})">Delete</button>
+                {% if not user.is_admin %}
+                <button onclick="makeAdmin({{ user.id }})">Make Admin</button>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <a href="\main_menu">Вернуться</a>
+    <a href="\manage_nodes">Узлы</a>
+    <script>
+        function deleteUser(userId) {
+            $.ajax({
+                url: '/manage_users',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ action: 'delete_user', user_id: userId }),
+                success: function() {
+                    location.reload();
+                }
+            });
+        }
+
+        function makeAdmin(userId) {
+            $.ajax({
+                url: '/manage_users',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ action: 'make_admin', user_id: userId }),
+                success: function() {
+                    location.reload();
+                }
+            });
+        }
+    </script>
+</body>
+</html>
